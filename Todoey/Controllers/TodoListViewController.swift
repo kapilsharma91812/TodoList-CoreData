@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreData
 
 class TodoListViewController: UITableViewController {
     
@@ -14,6 +15,9 @@ class TodoListViewController: UITableViewController {
     var itemArray = [Item]()
     let userDefault = UserDefaults.standard
     let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    //Get the instance of AppDelgate. "UIApplication.shared" is the instance of running app
+    //var appDelegate = (UIApplication.shared.delegate as! AppDelegate)
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
    
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,8 +29,8 @@ class TodoListViewController: UITableViewController {
 //        newItem.done = false
 //        itemArray.append(newItem)
         
-        //loadStringArrayFromUserDefault()
-        loadCustomItemsFromFile()
+
+        loadItemsFromDB()
         
     }
     
@@ -59,6 +63,12 @@ class TodoListViewController: UITableViewController {
             itemArray[indexPath.row].done = false
             tableView.cellForRow(at: indexPath)?.accessoryType = .none
         }
+        
+//        //To delete item from DB
+//        context.delete(itemArray[indexPath.row]) //remvoe from context
+//        itemArray.remove(at: indexPath.row) //removed from array
+//        saveToDB()
+        
     }
     
 //MARK - Add New Items
@@ -67,12 +77,12 @@ class TodoListViewController: UITableViewController {
         var textField = UITextField()
         let alert = UIAlertController(title: "Add New Todo Item", message: "", preferredStyle: .alert)
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
-            let newlyAdded = Item()
+            
+            let newlyAdded = Item(context: self.context)
             newlyAdded.title = textField.text!
             newlyAdded.done = false
             self.itemArray.append(newlyAdded)
-            //self.saveItemToUserDefault()
-            self.saveItemToFile()
+            self.saveToDB()
 
             
         }
@@ -92,40 +102,27 @@ class TodoListViewController: UITableViewController {
         userDefault.set(itemArray, forKey: "TodoListArray1")
     }
     
-    func saveItemToFile() {
+    func saveToDB() {
         
         //This method is encoding the array and saving it to file
         do {
             
-            //Enconding & Saving the Custom Item Array to file Items.plist
-            let encoder = PropertyListEncoder()
-            let data = try encoder.encode(self.itemArray)
-            try data.write(to: dataFilePath!)
+            try context.save()
         } catch {
-            print("Error encoding item array")
+            print("Error saving context \(error)")
         }
         
         self.tableView.reloadData()
     }
     
-    func loadCustomItemsFromFile() {
-        //This method will decode the data from Items.plist via userDefaults and will load in array
-        if let data = try? Data(contentsOf: dataFilePath!) {
-            let decoder = PropertyListDecoder()
-            do {
-                itemArray = try decoder.decode([Item].self, from: data)
-            } catch {
-                print("Error in decoding item array, \(error)")
-            }
-            
+    func loadItemsFromDB() {
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        do {
+           itemArray = try context.fetch(request)
+        } catch{
+            print("Error while fetching data from DB \(error)")
         }
     }
     
-    func loadStringArrayFromUserDefault() {
-        //Reading String array from user Defaults
-        //        if let items = userDefault.array(forKey: "TodoListArray1") as? [String] {
-        //            itemArray = items
-        //        }
-    }
 }
 
