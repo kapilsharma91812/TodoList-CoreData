@@ -22,7 +22,7 @@ class TodoListViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-
+        //searchBar.delegate = self
         
 //        let newItem = Item()
 //        newItem.title = "Do shopping"
@@ -36,7 +36,7 @@ class TodoListViewController: UITableViewController {
     
 
     
-//MARK - Tableview DataSource methods
+//MARK: - Tableview DataSource methods
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return itemArray.count
     }
@@ -52,7 +52,7 @@ class TodoListViewController: UITableViewController {
         return cell
     }
 
-//MARK -TableView Delegate Methods
+//MARK: -TableView Delegate Methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         print(itemArray[indexPath.row])
         tableView.deselectRow(at: indexPath, animated: true) //to remove the selection from list and it will behave like animation
@@ -71,7 +71,7 @@ class TodoListViewController: UITableViewController {
         
     }
     
-//MARK - Add New Items
+//MARK: - Add New Items
     
     @IBAction func addItemPressed(_ sender: UIBarButtonItem) {
         var textField = UITextField()
@@ -95,7 +95,9 @@ class TodoListViewController: UITableViewController {
         present(alert, animated: true, completion:nil)
     }
     
-//MARK - modifing the models
+
+    
+//MARK: - modifing the models
     
     func saveItemToUserDefault() {
         // Saving the string array to default
@@ -124,5 +126,39 @@ class TodoListViewController: UITableViewController {
         }
     }
     
+}
+
+extension TodoListViewController: UISearchBarDelegate {
+    //MARK: - Search releated functions
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        print(searchBar.text!)
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        
+        let predicate = NSPredicate(format: "title CONTAINS %@", searchBar.text!)
+        request.predicate = predicate
+        
+        let sortDescriptor = NSSortDescriptor(key: "title", ascending: true)
+        request.sortDescriptors = [sortDescriptor]
+        do {
+           itemArray = try context.fetch(request)
+            tableView.reloadData()
+        } catch{
+            print("Error while fetching data from DB \(error)")
+        }
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        //To load all the items when nothing is typed in search or search textbox has been made empty
+        if searchBar.text?.count == 0 {
+            loadItemsFromDB()
+            tableView.reloadData()
+            DispatchQueue.main.async {
+                //Close the keyboard and move the control out of search textbox
+                searchBar.resignFirstResponder()
+            }
+            
+        }
+    }
 }
 
