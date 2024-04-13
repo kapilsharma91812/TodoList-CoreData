@@ -11,27 +11,27 @@ import CoreData
 
 class TodoListViewController: UITableViewController {
     
-    //var itemArray = ["Find Me","Task1","Task2"]
+
     var itemArray = [Item]()
-    let userDefault = UserDefaults.standard
     let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    
     //Get the instance of AppDelgate. "UIApplication.shared" is the instance of running app
     //var appDelegate = (UIApplication.shared.delegate as! AppDelegate)
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    
+    //Will be set fom CategoryController
+    var selectedCategory : TaskType? {
+        /**
+         - didSet works like an observer
+         - Loading the relevant items based on category clicked by user on previous controller
+         */
+        didSet {
+            loadItemsFromDB()
+        }
+    }
    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        //searchBar.delegate = self
-        
-//        let newItem = Item()
-//        newItem.title = "Do shopping"
-//        newItem.done = false
-//        itemArray.append(newItem)
-        
-
-        loadItemsFromDB()
-        
     }
     
 
@@ -63,12 +63,6 @@ class TodoListViewController: UITableViewController {
             itemArray[indexPath.row].done = false
             tableView.cellForRow(at: indexPath)?.accessoryType = .none
         }
-        
-//        //To delete item from DB
-//        context.delete(itemArray[indexPath.row]) //remvoe from context
-//        itemArray.remove(at: indexPath.row) //removed from array
-//        saveToDB()
-        
     }
     
 //MARK: - Add New Items
@@ -80,6 +74,9 @@ class TodoListViewController: UITableViewController {
             
             let newlyAdded = Item(context: self.context)
             newlyAdded.title = textField.text!
+            
+            //Setting the whole cateogry object for foreign reference instead of setting just primary key(id)
+            newlyAdded.parentCategory = self.selectedCategory
             newlyAdded.done = false
             self.itemArray.append(newlyAdded)
             self.saveToDB()
@@ -99,11 +96,6 @@ class TodoListViewController: UITableViewController {
     
 //MARK: - modifing the models
     
-    func saveItemToUserDefault() {
-        // Saving the string array to default
-        userDefault.set(itemArray, forKey: "TodoListArray1")
-    }
-    
     func saveToDB() {
         
         //This method is encoding the array and saving it to file
@@ -118,7 +110,9 @@ class TodoListViewController: UITableViewController {
     }
     
     func loadItemsFromDB() {
+        let predicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
         let request : NSFetchRequest<Item> = Item.fetchRequest()
+        request.predicate = predicate
         do {
            itemArray = try context.fetch(request)
         } catch{
@@ -135,7 +129,7 @@ extension TodoListViewController: UISearchBarDelegate {
         print(searchBar.text!)
         let request : NSFetchRequest<Item> = Item.fetchRequest()
         
-        let predicate = NSPredicate(format: "title CONTAINS %@", searchBar.text!)
+        let predicate = NSPredicate(format: "title CONTAINS %@ AND parentCategory.name MATCHES %@", searchBar.text!, selectedCategory!.name!)
         request.predicate = predicate
         
         let sortDescriptor = NSSortDescriptor(key: "title", ascending: true)
