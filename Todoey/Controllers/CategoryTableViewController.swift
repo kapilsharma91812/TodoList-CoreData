@@ -8,9 +8,10 @@
 
 import UIKit
 import CoreData
+import SwipeCellKit
 
 
-class CategoryTableViewController: UITableViewController {
+class CategoryTableViewController: SwipeTableViewController {
     
     var categoryArray = [TaskType]()  //Our Category table name is TaskType
     
@@ -19,6 +20,7 @@ class CategoryTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         loadCateogryFromDB()
+        tableView.rowHeight = 80
     }
 
     //MARK: - Add new item
@@ -52,7 +54,8 @@ class CategoryTableViewController: UITableViewController {
         return categoryArray.count
     }
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
+      //  let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath) as! SwipeTableViewCell
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         cell.textLabel?.text = categoryArray[indexPath.row].name
         return cell
     }
@@ -81,7 +84,10 @@ class CategoryTableViewController: UITableViewController {
     
     
     //MARK: - DB methods
-    
+    override func deleteItem(at indexPath: IndexPath) {
+        categoryArray.remove(at: indexPath.row)
+        saveToDB()
+    }
     
     func loadCateogryFromDB() {
         let request : NSFetchRequest<TaskType> = TaskType.fetchRequest()
@@ -106,3 +112,6 @@ class CategoryTableViewController: UITableViewController {
     }
     
 }
+
+//MARK: - SWipe Cell Delegate Methods
+
