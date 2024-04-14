@@ -19,9 +19,26 @@ class CategoryTableViewController: SwipeTableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor.orange // Set your desired tint color
+        
+        
+               
+       // Set the navigation bar appearance
+       navigationController?.navigationBar.standardAppearance = appearance
+       navigationController?.navigationBar.scrollEdgeAppearance = navigationController?.navigationBar.standardAppearance
+       
+       // Optionally, you can set other navigation bar properties here
+       navigationController?.navigationBar.isTranslucent = false
+        
+        
         print("CategoryTableViewController viewDidLoad()")
         loadCateogryFromDB()
     }
+    
+
 
     //MARK: - Add new item
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
