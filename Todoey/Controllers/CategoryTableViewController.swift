@@ -19,8 +19,8 @@ class CategoryTableViewController: SwipeTableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        print("CategoryTableViewController viewDidLoad()")
         loadCateogryFromDB()
-        tableView.rowHeight = 80
     }
 
     //MARK: - Add new item
@@ -85,6 +85,7 @@ class CategoryTableViewController: SwipeTableViewController {
     
     //MARK: - DB methods
     override func deleteItem(at indexPath: IndexPath) {
+        context.delete(categoryArray[indexPath.row])
         categoryArray.remove(at: indexPath.row)
         saveToDB()
     }

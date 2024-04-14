@@ -33,7 +33,7 @@ class SwipeTableViewController: UITableViewController, SwipeTableViewCellDelegat
 
     override func viewDidLoad() {   
         super.viewDidLoad()
-
+        tableView.rowHeight = 80
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
 

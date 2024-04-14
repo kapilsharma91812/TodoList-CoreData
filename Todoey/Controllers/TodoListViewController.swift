@@ -9,7 +9,7 @@
 import UIKit
 import CoreData
 
-class TodoListViewController: UITableViewController {
+class TodoListViewController: SwipeTableViewController {
     
 
     var itemArray = [Item]()
@@ -42,7 +42,7 @@ class TodoListViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         cell.textLabel?.text = itemArray[indexPath.row].title
         if itemArray[indexPath.row].done == true {
             cell.accessoryType = .checkmark
@@ -90,6 +90,13 @@ class TodoListViewController: UITableViewController {
         }
         alert.addAction(action)
         present(alert, animated: true, completion:nil)
+    }
+    
+    override func deleteItem(at indexPath: IndexPath) {
+        print("Deleting item at index: \(indexPath.row)")
+        context.delete(itemArray[indexPath.row])
+        itemArray.remove(at: indexPath.row)
+        saveToDB()
     }
     
 
